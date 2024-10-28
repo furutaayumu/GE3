@@ -16,6 +16,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "Input.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -457,6 +458,13 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		wc.hInstance,
 		nullptr
 	);
+
+	Input* input = nullptr;
+
+	input = new Input();
+	input->Initialize(wc.hInstance,hwnd);
+
+	delete input;
 	//#ifdef DEBUG
 	//	ID3D12Debug1* debugController = nullptr;
 	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
