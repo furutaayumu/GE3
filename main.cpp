@@ -463,9 +463,8 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	input = new Input();
 	input->Initialize(wc.hInstance,hwnd);
-	input->Update();
 
-	delete input;
+
 	//#ifdef DEBUG
 	//	ID3D12Debug1* debugController = nullptr;
 	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -919,17 +918,17 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	//左上
-	vertexDataSprite[0].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[0].texcord = { 0.0f,0.0f };
-	//右上
-	vertexDataSprite[1].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1].texcord = { 1.0f,0.0f };
-	//左下
-	vertexDataSprite[2].position = { 0.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[2].texcord = { 0.0f,1.0f };
-	//右下
-	vertexDataSprite[3].position = {640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcord = { 1.0f,1.0f };
+	//vertexDataSprite[0].position = { 0.0f,0.0f,0.0f,1.0f };
+	//vertexDataSprite[0].texcord = { 0.0f,0.0f };
+	////右上
+	//vertexDataSprite[1].position = { 640.0f,0.0f,0.0f,1.0f };
+	//vertexDataSprite[1].texcord = { 1.0f,0.0f };
+	////左下
+	//vertexDataSprite[2].position = { 0.0f,360.0f,0.0f,1.0f };
+	//vertexDataSprite[2].texcord = { 0.0f,1.0f };
+	////右下
+	//vertexDataSprite[3].position = {640.0f,360.0f,0.0f,1.0f };
+	//vertexDataSprite[3].texcord = { 1.0f,1.0f };
 	/*vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
 	vertexDataSprite[4].texcord = { 1.0f,0.0f };
 	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
@@ -1098,8 +1097,23 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::NewFrame();
 			//開発用UIの処理。実際に開発用のUIをを出す場合はここをゲーム固有の処理に置き換える
 			//ImGui::ShowDemoWindow();
-
 			
+			input->Update();
+
+			if (input->TriggerKey(DIK_D)) {
+				transform.translate.x += 0.05f;
+			}
+			if (input->PushKey(DIK_A)) {
+				transform.translate.x -= 0.05f;
+			}
+			if (input->PushKey(DIK_W)) {
+				transform.translate.y += 0.05f;
+			}
+			if (input->PushKey(DIK_S)) {
+				transform.translate.y -= 0.05f;
+			}
+
+
 			ImGui::Begin("Window");
 			ImGui::DragFloat3("color", &materialData->x, 0.01f);//ImGui::DragFloat3("color", &materialData->x, 0.01f);
 			ImGui::DragFloat3("Modelrotate", &transform.rotate.x, 0.01f);
@@ -1110,9 +1124,9 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::DragFloat3("spriteRotate", &transformSprite.rotate.x, 0.01f);
 			ImGui::End();
 
-			transform.rotate.y += 0.03f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			*wvpData = worldMatrix;
+
 
 			//WVPMatrixを作成して設定する
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameratransform.scale, cameratransform.rotate, cameratransform.translate);
@@ -1284,7 +1298,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debug->Release();
 	}
 
-
+	delete input;
 
 	return 0;
 }
