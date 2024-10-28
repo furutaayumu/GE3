@@ -1,9 +1,8 @@
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
+
 
 #include "Input.h"
 #include "cassert"
-#include <wrl.h>
+
 #include <windows.h>
 
 #pragma comment(lib,"dinput8.lib")
@@ -16,11 +15,11 @@ void Input::Initialize(HINSTANCE hInstance,HWND hwnd) {
 	ComPtr<IDirectInput8> directInput = nullptr;
 	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
-	ComPtr<IDirectInputDevice8> keyboard;
-	result = directInput->CreateDevice(GUID_Syskeyboard, &keyboard, NULL);
+	
+	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
 
-	result = keyboard->SetDataFormat(&c_dfDIkeyboard);
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard);
 	assert(SUCCEEDED(result));
 	
 	result = keyboard->SetCooperativeLevel(hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
@@ -29,6 +28,8 @@ void Input::Initialize(HINSTANCE hInstance,HWND hwnd) {
 }
 
 void Input::Update() {
-
+	keyboard->Acquire();
+	BYTE key[256] = {};
+	keyboard->GetDeviceState(sizeof(key), key);
 
 }

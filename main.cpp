@@ -463,6 +463,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	input = new Input();
 	input->Initialize(wc.hInstance,hwnd);
+	input->Update();
 
 	delete input;
 	//#ifdef DEBUG
