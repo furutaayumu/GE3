@@ -415,7 +415,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Input* input = nullptr;
 
 	input = new Input();
-	input->Initialize(winApp->GetHInstance(), winApp->GetHwnd());
+	input->Initialize(winApp);
 
 
 	//#ifdef DEBUG
@@ -1207,7 +1207,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	}
-	CoUninitialize();
+
 
 	//解放処理
 	CloseHandle(fenceEvent);
@@ -1225,7 +1225,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
 	debugController->Release();
 #endif
-	CloseWindow(winApp->GetHwnd());
+	
 
 	vertexResource->Release();
 	graphicsPipelineState->Release();
@@ -1251,8 +1251,11 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debug->Release();
 	}
 
+	winApp->Finalize();
+
 	delete input;
 	delete winApp;
+	winApp = nullptr;
 
 	return 0;
 }
