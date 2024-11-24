@@ -1,4 +1,5 @@
 #include"WinApp.h"
+#include "DirectXCommon.h"
 #include<string>
 #include<d3d12.h>
 #include<dxgi1_6.h>
@@ -418,16 +419,6 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input->Initialize(winApp);
 
 
-	//#ifdef DEBUG
-	//	ID3D12Debug1* debugController = nullptr;
-	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-	//		//デバックレイヤーを有効化する
-	//		debugController->EnableDebugLayer();
-	//		//さらにGPU側でもチェックを行うようにする
-	//		debugController->SetEnableGPUBasedValidation(TRUE);
-	//	}
-	//#endif // DEBUG
-
 #ifdef _DEBUG
 	ID3D12Debug1* debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
@@ -488,19 +479,6 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
 	UploadTextureData(textureResource, mipImages);
-
-
-
-	//#ifdef _DEBUG
-	//	ID3D12Debug1* debugController = nullptr;
-	//	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-	//		//デバックレイヤーを有効化する
-	//		debugController->EnableDebugLayer();
-	//		//さらにGPU側でもチェックを行うようにする
-	//		debugController->SetEnableGPUBasedValidation(TRUE);
-	//	}
-	//
-	//#endif
 
 #ifdef _DEBUG
 	ID3D12InfoQueue* infoQueue = nullptr;
@@ -619,74 +597,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//二つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
 
-	////これから書き込むバックバッファのインデックスを取得
-	//UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-	////TransitionBarrierの設定
-	//D3D12_RESOURCE_BARRIER barrier{};
-	////今回のバリアはTransition
-	//barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	////Noneにしておく
-	//barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	////バリアを張る対象のリソース。現在のバックバッファに対して行う
-	//barrier.Transition.pResource = swapChainResources[backBufferIndex];
-	////遷移前(現在）のResourceState
-	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	////遷移後のResourceState
-	//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	////TransitionBarrierを張る
-	//commandList->ResourceBarrier(1, &barrier);
-
-
-
-
-
-
-	////描画先のRTVを設定
-	//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-	////指定した色で画面全体をクリアする
-	//float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色RGBAの順
-	//commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-
-
-
-
-
-	////画面に描く処理はすべて終わり、画面に映すので、状態を遷移
-	////今回はRenderTargetからPresentにする
-
-
-	//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	////TransitionBarrierを張る
-	//commandList->ResourceBarrier(1, &barrier);
-
-
-
-
-
-
-
-
-
-
-
-
-	//
-	////コマンドリストの内容を確定させる。すべてのコマンドを積んでからcloseすること
-	//hr = commandList->Close();
-	//assert(SUCCEEDED(hr));
-
-	////GPUにコマンドリストの実行を行わせる
-	//ID3D12CommandList* commandLists[] = { commandList };
-	//commandQueue->ExecuteCommandLists(1, commandLists);
-
-	////GPUとOSに画面交換を行うよう通知する
-	//swapChain->Present(1, 0);
-
-	//
-
-
-
+	
 	//初期値０でFenceを作る
 	ID3D12Fence* fence = nullptr;
 	uint64_t fenceValue = 0;
@@ -900,41 +811,6 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ID3D12Resource* vertexResource = nullptr;
 	hr = device->CreateCommittedResource(&uploadHeapProoerties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
-
-
-
-	//頂点リソースにデータを書き込む
-	/*VertexData* vertexData = nullptr;*/
-	/*vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcord = { 0.0f,1.0f };
-
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcord = { 0.5f,0.0f };
-
-	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[2].texcord = { 1.0f,1.0f };
-
-	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[3].texcord = { 0.0f,1.0f };
-
-	vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[4].texcord = { 0.5f,0.0f };
-
-	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[5].texcord = { 1.0f,1.0f };*/
-
-	//頂点バッファビューを作成する
-	/*D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};*/
-	//リソースの先頭のアドレスから使う
-	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	////仕様するリソースのサイズは頂点３つ分のサイズ
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * modelData.vertices.size();
-	////1頂点当たりのサイズ
-	//vertexBufferView.StrideInBytes = sizeof(VertexData);
-
-	//頂点リソースにデータを書き込む
 
 
 	//マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
