@@ -1,7 +1,7 @@
 #include "Logger.h"
 #include <debugapi.h>
 
-namespace Logget {
+namespace Logger {
 	void Log(const std::string& message) {
 		OutputDebugStringA(message.c_str());
 	}
