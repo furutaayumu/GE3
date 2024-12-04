@@ -1,5 +1,6 @@
 #include "Logger.h"
-#include <debugapi.h>
+#include <dxgidebug.h>
+
 
 namespace Logger {
 	void Log(const std::string& message) {
