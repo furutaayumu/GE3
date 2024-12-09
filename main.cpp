@@ -916,11 +916,11 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //
 //
 //
-//	while (true) {
-//		if (winApp->ProcessMessage()) {
-//			break;
-//		}
-//
+	while (true) {
+		if (winApp->ProcessMessage()) {
+			break;
+		}
+
 //			ImGui_ImplDX12_NewFrame();
 //			ImGui_ImplWin32_NewFrame();
 //			ImGui::NewFrame();
@@ -989,7 +989,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //			commandList->ResourceBarrier(1, &barrier);
 //
 //			//描画先のRTVを設定
-//			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+//			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->	();
 //			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 //			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 //			//指定した色で画面全体をクリアする
@@ -1081,14 +1081,14 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //			assert(SUCCEEDED(hr));
 //	
 //
-//
-//	}
-//
-//
-	//解放処理
-//	CloseHandle(fenceEvent);
-//	fence->Release();
-//	rtvDescriptorHeap->Release();
+//	
+	}
+////
+////
+//	//解放処理
+////	CloseHandle(fenceEvent);
+////	fence->Release();
+////	rtvDescriptorHeap->Release();
 //	swapChainResources[0]->Release();
 //	swapChainResources[1]->Release();
 //	swapChain->Release();
