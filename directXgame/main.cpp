@@ -786,10 +786,6 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//RootParameter作成。複数設定出来るので配列。今回は結果が一つだけなので長さ１の配列
 	D3D12_ROOT_PARAMETER rootParameters[3] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-	rootParameters[0].Descriptor.ShaderRegister = 0;
-
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//CBVを使う
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//VertexShaderを使う
 	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRangeForInstancing;
@@ -1223,14 +1219,14 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			//マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			/*commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());*/
 
 			//wvp用のCBufferの場所を設定
-			/*commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());*/
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 
 			/*commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());*/
 
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			/*commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);*/
 			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
@@ -1241,14 +1237,14 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 
-			////Spriteの描画
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  //VBVを設定
-			//
-			////TransformationMatrixCBufferの場所を設定
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			//commandList->IASetIndexBuffer(&indexBufferViewSprite);  //IBVを設定
-			////インスタンス
-			//commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			//Spriteの描画
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);  //VBVを設定
+			
+			//TransformationMatrixCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);  //IBVを設定
+			//インスタンス
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
@@ -1310,9 +1306,9 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
-//#ifdef _DEBUG
-//	debugController->Release();
-//#endif
+#ifdef _DEBUG
+	debugController->Release();
+#endif
 	CloseWindow(hwnd);
 
 	vertexResource->Release();
