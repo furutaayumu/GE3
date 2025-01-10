@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include "Input.h"
+#include "Logger.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
@@ -605,7 +606,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //	//assert(SUCCEEDED(hr));
 //
 //	//FenceのSignalを待つためのイベントを作成する
-//	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	//HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 //	assert(fenceEvent != nullptr);
 //
 //	////dxcCompilerを初期化
@@ -621,108 +622,109 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //	//hr = dxcUtils->CreateDefaultIncludeHandler(&includeHander);
 //	//assert(SUCCEEDED(hr));
 //
-//	//RootSignature作成
-//	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
-//	descriptionRootSignature.Flags =
-//		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-//
-//	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-//	descriptorRange[0].BaseShaderRegister = 0;
-//	descriptorRange[0].NumDescriptors = 1;
-//	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-//	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-//
-//
-//	//RootParameter作成。複数設定出来るので配列。今回は結果が一つだけなので長さ１の配列
-//	D3D12_ROOT_PARAMETER rootParameters[3] = {};
-//	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
-//	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
-//	rootParameters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
-//	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
-//	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//VertexShaderを使う
-//	rootParameters[1].Descriptor.ShaderRegister = 0;//レジスタ番号０を使う
-//	descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
-//	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
-//
-//	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-//	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-//	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
-//	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
-//
-//	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
-//	staticSamplers[0].Filter = D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR;
-//	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-//	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-//	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
-//	staticSamplers[0].ShaderRegister = 0;
-//	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
-//	descriptionRootSignature.pStaticSamplers = staticSamplers;
-//	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-//
-//
-//
-//
-//
-//
-//	//ジリアライズしてバイナリにする
-//	ID3DBlob* signatureBlob = nullptr;
-//	ID3DBlob* errorBlob = nullptr;
-//	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
-//		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
-//	if (FAILED(hr)) {
-//		Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
-//		assert(false);
-//	}
-//	//バイナリを元に生成
-//	ID3D12RootSignature* rootSignature = nullptr;
-//	hr = device->CreateRootSignature(0,
-//		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
-//	assert(SUCCEEDED(hr));
-//
-//	//InputLayout
-//	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
-//	inputElementDescs[0].SemanticName = "POSITION";
-//	inputElementDescs[0].SemanticIndex = 0;
-//	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-//	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-//	inputElementDescs[1].SemanticName = "TEXCOORD";
-//	inputElementDescs[1].SemanticIndex = 0;
-//	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-//	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
-//	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
-//	inputLayoutDesc.pInputElementDescs = inputElementDescs;
-//	inputLayoutDesc.NumElements = _countof(inputElementDescs);
-//
-//	//Blendstartの設定
-//	D3D12_BLEND_DESC blendDesc{};
-//	//すべての色要素を書き込む
-//	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-//
-//	//RasiterzerStateの設定
-//	D3D12_RASTERIZER_DESC rasterizerDesc{};
-//	//裏面(時計回り）を表示しない
-//	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-//	//三角形を塗りつぶす
-//	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-//
-//
-//	//shaderをコンパイルする
-//	IDxcBlob* vertexShaderBlob = CompileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxCompiler, includeHander);
-//	assert(vertexShaderBlob != nullptr);
-//
-//	IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxCompiler, includeHander);
-//	assert(vertexShaderBlob != nullptr);
-//	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-//	graphicsPipelineStateDesc.pRootSignature = rootSignature;
-//	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-//	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };
-//	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };
-//	graphicsPipelineStateDesc.BlendState = blendDesc;
-//	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-//	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-//	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	//RootSignature作成
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	descriptionRootSignature.Flags =
+		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
+	descriptorRange[0].BaseShaderRegister = 0;
+	descriptorRange[0].NumDescriptors = 1;
+	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+
+	//RootParameter作成。複数設定出来るので配列。今回は結果が一つだけなので長さ１の配列
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//PixelShaderで使う
+	rootParameters[0].Descriptor.ShaderRegister = 0;//レジスタ番号０とバインド
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//CBVを使う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;//VertexShaderを使う
+	rootParameters[1].Descriptor.ShaderRegister = 0;//レジスタ番号０を使う
+	descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
+	descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
+
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+
+	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
+	staticSamplers[0].Filter = D3D12_FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR;
+	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+	staticSamplers[0].ShaderRegister = 0;
+	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	descriptionRootSignature.pStaticSamplers = staticSamplers;
+	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
+
+
+
+
+
+
+	//ジリアライズしてバイナリにする
+	HRESULT hr;
+	ID3DBlob* signatureBlob = nullptr;
+	ID3DBlob* errorBlob = nullptr;
+	hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		Logger::Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		assert(false);
+	}
+	//バイナリを元に生成
+	ID3D12RootSignature* rootSignature = nullptr;
+	hr = dxCommon->DeviceGet()->CreateRootSignature(0,
+		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	assert(SUCCEEDED(hr));
+
+	//InputLayout
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
+	inputElementDescs[0].SemanticName = "POSITION";
+	inputElementDescs[0].SemanticIndex = 0;
+	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[1].SemanticName = "TEXCOORD";
+	inputElementDescs[1].SemanticIndex = 0;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
+	inputLayoutDesc.pInputElementDescs = inputElementDescs;
+	inputLayoutDesc.NumElements = _countof(inputElementDescs);
+
+	//Blendstartの設定
+	D3D12_BLEND_DESC blendDesc{};
+	//すべての色要素を書き込む
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	//RasiterzerStateの設定
+	D3D12_RASTERIZER_DESC rasterizerDesc{};
+	//裏面(時計回り）を表示しない
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	//三角形を塗りつぶす
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+
+
+	//shaderをコンパイルする
+	IDxcBlob* vertexShaderBlob = CompileShader(L"resources/shaders/Object3D.VS.hlsl", L"vs_6_0", dxcUtils, dxCompiler, includeHander);
+	assert(vertexShaderBlob != nullptr);
+
+	IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3D.PS.hlsl", L"ps_6_0", dxcUtils, dxCompiler, includeHander);
+	assert(vertexShaderBlob != nullptr);
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
+	graphicsPipelineStateDesc.pRootSignature = rootSignature;
+	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
+	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),vertexShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),pixelShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.BlendState = blendDesc;
+	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
+	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 //	//書き込むRTVの情報
 //	graphicsPipelineStateDesc.NumRenderTargets = 1;
 //	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -915,7 +917,6 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //
 //
 //
-//
 	while (true) {
 		if (winApp->ProcessMessage()) {
 			break;
@@ -970,7 +971,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 //			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 //
-//
+		dxCommon->PreDraw();
 //			//これから書き込むバックバッファのインデックスを取得
 //			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 //			//TransitionBarrierの設定
@@ -1038,6 +1039,7 @@ int WINAPI	WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 //			//インスタンス
 //			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 //
+		dxCommon->PostDraw();
 //			//実際のcommandListのImGuiの描画コマンドを積む
 //			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 //

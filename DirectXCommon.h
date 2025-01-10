@@ -14,12 +14,18 @@ class DirectXCommon
 	
 public:
 	void Initialize(WinApp* winApp);
+	//描画前処理
+	void PreDraw();
+	//描画後処理
+	void PostDraw();
 
 	//SRV専用
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
 
 	ID3D12DescriptorHeap*	 CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible); 
+	Microsoft::WRL::ComPtr<ID3D12Device> DeviceGet() { return device; }
+	
 private:
 	void DeviceIni();
 	void CommandIni();
@@ -38,6 +44,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
 	
+
 
 	//ハンドルを取得する
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
@@ -72,14 +79,17 @@ private:
 	D3D12_RECT scissorRect{};
 
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle{};
-	
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2]{};
 
 	IDxcUtils* dxcUtils = nullptr;
 	IDxcCompiler3* dxCompiler = nullptr;
 	IDxcIncludeHandler* includeHander = nullptr;
 
-
-	//スワップチェーンリソース
+	//スワップチェーンリソーｽ
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
+	
+	//フェンス値
+	UINT64 fenceValue = 0;
+	HANDLE fenceEvent{};
 }; 
 
