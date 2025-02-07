@@ -212,7 +212,7 @@ void DirectXCommon::CreateZBuffer() {
 		&resourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&resource));
+		IID_PPV_ARGS(&depthStancilResource));
 	assert(SUCCEEDED(hr));
 }
 
@@ -261,13 +261,13 @@ void DirectXCommon::RTVInitialize() {
 	rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	//まず一つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
-	rtvHandles[0] = rtvStartHandle;
+	rtvHandles[0] = GetCPUDescriptorHandle(rtvDescriptorHeap,descriptorSizeRTV,0);
 
 
 
 	device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
 	//二つ目のディスクリプタハンドルを得る(自力で）
-	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	rtvHandles[1] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 1);
 
 	//二つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
@@ -275,7 +275,7 @@ void DirectXCommon::RTVInitialize() {
 
 void DirectXCommon::DSVInitialize()
 {
-	ID3D12Resource* depthStancilResource = nullptr;
+	
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -401,7 +401,6 @@ void DirectXCommon::PreDraw()
 	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
 	//遷移前(現在）のResourceState
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	commandList->ResourceBarrier(1, &barrier);
 	//遷移後のResourceState
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	commandList->ResourceBarrier(1, &barrier);
@@ -414,7 +413,7 @@ void DirectXCommon::PreDraw()
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	//SRV用のディスクリプターを指定する
-	ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
+		ID3D12DescriptorHeap* descriptorHeaps[1] = { srvDescriptorHeap };
 	commandList->SetDescriptorHeaps(1, descriptorHeaps);
 
 	commandList->RSSetViewports(1, &viewport);//viewportを設定

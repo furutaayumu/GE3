@@ -65,6 +65,8 @@ private:
 	ID3D12DescriptorHeap* srvDescriptorHeap = nullptr;
 	ID3D12DescriptorHeap* dsvDescriptorHeap = nullptr;
 
+	ID3D12Resource* depthStancilResource = nullptr;
+
 	//RTV
 	const uint32_t descriptorSizeRTV{};
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
