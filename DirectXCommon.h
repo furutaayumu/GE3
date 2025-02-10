@@ -6,6 +6,8 @@
 #include <dxcapi.h>
 #include <array>
 #include<format>
+#include <chrono>
+#include <thread>
 
 #include"externals/DirectXTex/DirectXTex.h"
 #include"externals/imgui/imgui_impl_dx12.h"
@@ -121,5 +123,11 @@ private:
 
 	D3D12_RESOURCE_BARRIER barrier{};
 
+	private:
+	//FP固定化
+		void InitializeFixFPS();
+
+		void UpdataFixFPS();
+		std::chrono::steady_clock::time_point reference_;
 }; 
 
