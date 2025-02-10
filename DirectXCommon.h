@@ -52,20 +52,20 @@ private:
 	
 	WinApp* winApp = nullptr;
 
-	ID3D12CommandQueue* commandQueue = nullptr;
-	ID3D12GraphicsCommandList* commandList = nullptr;
-	ID3D12CommandAllocator* commandAllocator = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator = nullptr;
 
 	
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
-	ID3D12Resource* resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 
-	ID3D12DescriptorHeap* rtvDescriptorHeap = nullptr;
-	ID3D12DescriptorHeap* srvDescriptorHeap = nullptr;
-	ID3D12DescriptorHeap* dsvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = nullptr;
 
-	ID3D12Resource* depthStancilResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStancilResource = nullptr;
 
 	//RTV
 	const uint32_t descriptorSizeRTV{};
@@ -75,7 +75,7 @@ private:
 	//DSV
 	const uint32_t descriptorSizeDSV{};
 
-	ID3D12Fence* fence = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissorRect{};
@@ -83,9 +83,11 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle{};
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2]{};
 
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxCompiler = nullptr;
-	IDxcIncludeHandler* includeHander = nullptr;
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils = nullptr;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxCompiler = nullptr;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHander = nullptr;
+
+
 
 	//スワップチェーンリソーｽ
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
@@ -93,5 +95,8 @@ private:
 	//フェンス値
 	UINT64 fenceValue = 0;
 	HANDLE fenceEvent{};
+
+	D3D12_RESOURCE_BARRIER barrier{};
+
 }; 
 

@@ -151,7 +151,7 @@ void DirectXCommon::CommandIni() {
 
 	//コマンドリストを生成する
 
-	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator, nullptr, IID_PPV_ARGS(&commandList));
+	hr = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator.Get(), nullptr, IID_PPV_ARGS(&commandList));
 	//コマンドリストの生成がうまくいかなかったので起動できない
 	assert(SUCCEEDED(hr));
 
@@ -178,7 +178,7 @@ void DirectXCommon::SwapChain() {
 	swapChainDesc.BufferCount = 2;//ダブルバッファ
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;//モニターに映したら、中身を破棄
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue, winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
+	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), winApp->GetHwnd(), &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 }
 
@@ -261,13 +261,10 @@ void DirectXCommon::RTVInitialize() {
 	rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	//まず一つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
-	rtvHandles[0] = GetCPUDescriptorHandle(rtvDescriptorHeap,descriptorSizeRTV,0);
-
-
-
+	rtvHandles[0] = rtvStartHandle;
 	device->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
 	//二つ目のディスクリプタハンドルを得る(自力で）
-	rtvHandles[1] = GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 1);
+	rtvHandles[1].ptr = rtvHandles[0].ptr + device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	//二つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
@@ -281,7 +278,7 @@ void DirectXCommon::DSVInitialize()
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 
 	//先頭に作る
-	device->CreateDepthStencilView(depthStancilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	device->CreateDepthStencilView(depthStancilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void DirectXCommon::FenceInitialize()
@@ -343,7 +340,7 @@ void DirectXCommon::ImGuiInitialize()
 		device.Get(),
 		swapChainDesc.BufferCount,
 		rtvDesc.Format,
-		srvDescriptorHeap,
+		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
 	);
@@ -392,7 +389,7 @@ void DirectXCommon::PreDraw()
 	//リソースバリアで書き込み可能に変更
 
 	//	TransitionBarrierの設定
-	D3D12_RESOURCE_BARRIER barrier{};
+	//D3D12_RESOURCE_BARRIER barrier{};
 	//今回のバリアはTransition
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	//Noneにしておく
@@ -413,8 +410,8 @@ void DirectXCommon::PreDraw()
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	//SRV用のディスクリプターを指定する
-		ID3D12DescriptorHeap* descriptorHeaps[1] = { srvDescriptorHeap };
-	commandList->SetDescriptorHeaps(1, descriptorHeaps);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeaps[1] = { srvDescriptorHeap.Get()};
+	commandList->SetDescriptorHeaps(1, descriptorHeaps->GetAddressOf());
 
 	commandList->RSSetViewports(1, &viewport);//viewportを設定
 	commandList->RSSetScissorRects(1, &scissorRect);//scissorRectを設定
@@ -426,7 +423,7 @@ void DirectXCommon::PostDraw()
 	//これから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 	//表示状態に変更
-	D3D12_RESOURCE_BARRIER barrier{};
+
 	//今回のバリアはTransition
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	//Noneにしておく
@@ -441,17 +438,19 @@ void DirectXCommon::PostDraw()
 
 	//グラフィックコマンドクローズ
 	hr = commandList->Close();
+	assert(SUCCEEDED(hr));
+
 
 	//GPUコマンドの実行
-	ID3D12CommandList* commandLists[] = { commandList };
+	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get() };
 	//コマンドキューにシグナルを送る
-	commandQueue->ExecuteCommandLists(1, commandLists);
+	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 	//GPUとOSに画面交換を行うよう通知する
 	swapChain->Present(1, 0);
 	//fenceの値を更新
 	fenceValue++;
 	//GPUがここまでたどり着いたときに、fenceの値を指定した値に代入するようにSignalを送る
-	commandQueue->Signal(fence, fenceValue);
+	commandQueue->Signal(fence.Get(), fenceValue);
 
 	//コマンド完了を待つ
 	if (fence->GetCompletedValue() < fenceValue)
@@ -465,6 +464,6 @@ void DirectXCommon::PostDraw()
 	////次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
-	hr = commandList->Reset(commandAllocator, nullptr);
+	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
 }
