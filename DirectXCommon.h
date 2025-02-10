@@ -7,10 +7,27 @@
 #include <array>
 #include<format>
 
+#include"externals/DirectXTex/DirectXTex.h"
 #include"externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 class DirectXCommon
 {
+public:
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(
+		//CompilerするShaderファイルへのパス
+		const std::wstring& filePath,
+		//Compilerに使用するProfile
+		const wchar_t* profile);
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
+	ID3D12Resource* CreateTextureResource(const DirectX::TexMetadata& metadata);
+	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	HANDLE GetFenceEvent()const { return fenceEvent; }
+	ID3D12GraphicsCommandList* GetCommandlist()const { return commandList.Get(); }
+	ID3D12DescriptorHeap* GetSrvDescriptorHeap()const { return srvDescriptorHeap.Get(); }
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+private://関数
 	
 public:
 	void Initialize(WinApp* winApp);
@@ -26,6 +43,9 @@ public:
 	ID3D12DescriptorHeap*	 CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible); 
 	Microsoft::WRL::ComPtr<ID3D12Device> DeviceGet() { return device; }
 	
+	//ゲッター
+	ID3D12Device* GetDevice() const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 private:
 	void DeviceIni();
 	void CommandIni();
@@ -50,6 +70,8 @@ private:
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDecriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	
+
+
 	WinApp* winApp = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
@@ -58,6 +80,7 @@ private:
 
 	
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 
