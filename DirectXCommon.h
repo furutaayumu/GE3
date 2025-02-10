@@ -22,13 +22,13 @@ public:
 		const wchar_t* profile);
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(size_t sizeInBytes);
-	ID3D12Resource* CreateTextureResource(const DirectX::TexMetadata& metadata);
-	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
+	void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
 	HANDLE GetFenceEvent()const { return fenceEvent; }
 	ID3D12GraphicsCommandList* GetCommandlist()const { return commandList.Get(); }
 	ID3D12DescriptorHeap* GetSrvDescriptorHeap()const { return srvDescriptorHeap.Get(); }
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 private://関数
 	
 public:
@@ -38,11 +38,11 @@ public:
 	//描画後処理
 	void PostDraw();
 
+	void Finalize();
+
 	//SRV専用
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
-
-	ID3D12DescriptorHeap*	 CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible); 
 	Microsoft::WRL::ComPtr<ID3D12Device> DeviceGet() { return device; }
 	
 	//ゲッター
@@ -61,6 +61,7 @@ private:
 	void scissorIni();
 	void DxCoInitialize();
 	void ImGuiInitialize();
+	
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;

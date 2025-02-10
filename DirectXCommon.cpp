@@ -103,7 +103,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	return resource;
 }
 
-ID3D12Resource* DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
 {
 	//resource設定
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -120,7 +120,6 @@ ID3D12Resource* DirectXCommon::CreateTextureResource(const DirectX::TexMetadata&
 	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
 	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 	//resourceを生成
-	ID3D12Resource* resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
@@ -129,10 +128,10 @@ ID3D12Resource* DirectXCommon::CreateTextureResource(const DirectX::TexMetadata&
 		nullptr,
 		IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
-	return resource;
+	return resource.Get();
 }
 
-void DirectXCommon::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
 {
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
@@ -161,18 +160,6 @@ DirectX::ScratchImage DirectXCommon::LoadTexture(const std::string& filePath)
 			assert(SUCCEEDED(hr));
 		
 			return mipImages;
-}
-
-Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(ID3D12Device* device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
-{
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap = nullptr;
-	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
-	descriptorHeapDesc.Type = heapType;
-	descriptorHeapDesc.NumDescriptors = numDescriptors;
-	descriptorHeapDesc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	HRESULT hr = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&descriptorHeap));
-	assert(SUCCEEDED(hr));
-	return descriptorHeap;
 }
 
 void DirectXCommon::Initialize(WinApp* winApp) {
@@ -237,7 +224,7 @@ void DirectXCommon::DeviceIni() {
 	HRESULT hr;
 
 #ifdef _DEBUG
-	ID3D12Debug1* debugController = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
 		//デバックレイヤーを有効化する
 		debugController->EnableDebugLayer();
@@ -531,6 +518,16 @@ void DirectXCommon::ImGuiInitialize()
 	);
 }
 
+void DirectXCommon::Finalize()
+{
+	CloseHandle(fenceEvent);
+
+	//ImGuiの終了処理。
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+}
+
 D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriptorHandle(uint32_t index)
 {
 	return GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
@@ -540,9 +537,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t in
 	return GetGPUDecriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
 }
 
-ID3D12DescriptorHeap* DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DirectXCommon::CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible)
 {
-	ID3D12DescriptorHeap* descriptorHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap;
 	D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc{};
 	descriptorHeapDesc.Type = heapType;
 	descriptorHeapDesc.NumDescriptors = numDescriptors;

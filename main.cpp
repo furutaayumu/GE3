@@ -201,7 +201,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 }
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
-	D3DResourceLeakChecker();
+	D3DResourceLeakChecker leackChecker;
 
 	WinApp* winApp = nullptr;
 	//WindowsAPIの初期化
@@ -695,29 +695,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 		directXCommon->PostDraw();
 
 	}
-
-	
-
-	//ImGuiの終了処理。
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-
-	//解放処理
-	CloseHandle(directXCommon->GetFenceEvent());
-
-
 	//入力解放
 	delete input;
 
 
 	//WindowsAPIの終了処理
 	winApp->Finalize();
-
+	directXCommon->Finalize();
 
 	//WindowsAPI解放
 	delete winApp;
-
+	delete directXCommon;
 
 	return 0;
 }
