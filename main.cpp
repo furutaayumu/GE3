@@ -20,6 +20,7 @@
 #include"WinAPP.h"
 #include"Logger.h"
 #include"StringUtility.h"
+#include "LeakChecker.h"
 #include "externals/imgui/imgui_impl_win32.h"
 //extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
@@ -200,7 +201,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 }
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
-	//D3DResourceLeakChacker leakCheck;
+	D3DResourceLeakChecker();
 
 	WinApp* winApp = nullptr;
 	//WindowsAPIの初期化
@@ -695,6 +696,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 	}
 
+	
 
 	//ImGuiの終了処理。
 	ImGui_ImplDX12_Shutdown();
