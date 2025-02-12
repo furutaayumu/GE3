@@ -58,6 +58,18 @@ struct ModelData {
 	MaterialData material;
 };
 
+//Transform変数を作る
+Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+
+// コールバック関数のプロトタイプ宣言
+typedef void (*Callback)(int result);
+
+// 判定を行うコールバック関数
+void ModelTransform(int result) {
+	transform.rotate.y += 0.1f;
+	transform.scale.x += 0.02f;
+}
+
 
 void UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
 {
@@ -579,8 +591,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-	//Transform変数を作る
-	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	
 
 	Transform cameratransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
 	while (true) {
@@ -618,7 +629,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 			transform.translate.x += 0.01f;
 		}
 
-
+		ModelTransform(0);
 
 		//選択して色が変えられる
 		ImGui::Begin("Window");
