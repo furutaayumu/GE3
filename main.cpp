@@ -683,7 +683,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 	filter.DenyList.NumSeverities = _countof(severities);
 	filter.DenyList.pSeverityList = severities;
 	//指定したメッセージの表示を抑制する
-	infoQueue->PushStorageFilter(&filter);
+	/*infoQueue->PushStorageFilter(&filter);*/
 
 
 
