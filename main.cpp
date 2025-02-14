@@ -1498,14 +1498,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {//main関数
 
 
 
-			//描画！(DrawCall/ドローコール)
-			commandList->DrawInstanced(6, 1, 0, 0);
+			////描画！(DrawCall/ドローコール)
+			//commandList->DrawInstanced(6, 1, 0, 0);
 
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
 			//描画！(DrawCall/ドローコール)6個のインデックスを使用し１つのインスタンスを描画。その他は当面０で良い
-			commandList->DrawInstanced(6, 1, 0, 0);
+			/*commandList->DrawInstanced(6, 1, 0, 0);
 
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);*/
 
 
 			//実際のcommandListのImGuiの描画コマンドを積む
